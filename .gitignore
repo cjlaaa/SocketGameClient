@@ -1,0 +1,4 @@
+/cocos2d
+/proj*
+CMakeLists.txt
+.cocos-project.json
