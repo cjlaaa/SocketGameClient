@@ -17,7 +17,7 @@ enum
     enZorderFront = 200,
 };
 
-class HelloWorld : public cocos2d::Layer,public cocos2d::TextFieldDelegate
+class HelloWorld : public cocos2d::Layer,public cocos2d::TextFieldDelegate,public ClientDelegate
 {
 public:
     // there's no 'id' in cpp, so we recommend returning the class instance pointer

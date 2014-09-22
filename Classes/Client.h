@@ -14,7 +14,13 @@
 #include "cocos2d.h"
 #define dMAX_SOCK_BUFF 1024
 
-class Client : public CCNode
+class ClientDelegate
+{
+public:
+    virtual void GetServerMsg(std::string) = 0;
+};
+
+class Client : public Node
 {
 public:
     static Client* CreateClient(Node*);
@@ -87,5 +93,5 @@ protected:
     //数据处理函数
     void ReadRecvBuff();
 };
-    
+
 #endif /* defined(__testClient__Client__) */

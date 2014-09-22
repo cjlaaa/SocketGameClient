@@ -78,13 +78,13 @@ bool HelloWorld::init()
     
     if(Client->ConnectToServer("127.0.0.1", 7000)==false) log("Connect Server Failed...");
     else schedule(schedule_selector(HelloWorld::update), 0.1f);
-    
     Client->OnSendChangeNick("hENRYcHANG");
     
     auto pTextField = TextFieldTTF::textFieldWithPlaceHolder("<click here for input>",
                                                              "Arial",
                                                              20);
     pTextField->setDelegate(this);
+    pTextField->attachWithIME();
     pTextField->setPosition(visibleSize.width/2,visibleSize.height/2);
     addChild(pTextField,enZorderFront,enTagTextField);
     
@@ -100,16 +100,6 @@ void HelloWorld::menuCloseCallback(Ref* pSender)
     CCASSERT(pTextField!=NULL, "TextField Get Error!");
     
     Client->OnSendChatMsg("test Msg");
-//#if (CC_TARGET_PLATFORM == CC_PLATFORM_WP8) || (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
-//	MessageBox("You pressed the close button. Windows Store Apps do not implement a close button.","Alert");
-//    return;
-//#endif
-//
-//    Director::getInstance()->end();
-//
-//#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-//    exit(0);
-//#endif
 }
 
 void HelloWorld::update(float fT)
@@ -122,7 +112,7 @@ void HelloWorld::update(float fT)
 
 void HelloWorld::GetServerMsg(std::string MsgFromServer)
 {
-    
+    log("%s",MsgFromServer.c_str());
 }
 
 

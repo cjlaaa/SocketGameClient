@@ -7,6 +7,7 @@
 //
 
 #include "Client.h"
+#include "HelloWorldScene.h"
 
 Client* Client::CreateClient(Node *Scene)
 {
@@ -26,7 +27,7 @@ bool Client::init(Node* Scene)
 {
     if(Node::init()==false)
     {
-        log("Client init Error!");
+        ClientLog("Client init Error!");
         return false;
     }
     
@@ -49,6 +50,13 @@ void Client::update(float fT)
 //连接处理函数
 BOOL Client::ConnectToServer(char *host,int port)
 {
+#ifdef WIN32
+    WSADATA wsa;
+    if (WSAStartup(MAKEWORD(2,2),&wsa)!=0)
+	{
+       return false;
+    }
+#endif
     struct sockaddr_in s_addr_in;
     
     //套接字的创建
@@ -62,7 +70,7 @@ BOOL Client::ConnectToServer(char *host,int port)
     
     //connect
     if (connect(m_sock, (struct sockaddr*)&s_addr_in, sizeof(s_addr_in))!=0) return false;
-    CCLOG("Connetct Server Success!");
+    ClientLog("Connetct Server Success!");
    
     //socket Nonblocking
     NonBlock(m_sock);
@@ -116,7 +124,7 @@ void Client::RecvData()
         
         if (recvSize==0)
         {
-            log("RecvData Error!Connection Failed...");
+            ClientLog("RecvData Error!Connection Failed...");
             return;
         }
         
@@ -126,13 +134,13 @@ void Client::RecvData()
 #if defined(WIN32)
             if (WSAGetLastError()!=WSAEWOULDBLOCK)
             {
-                log("WSAGetLastError()!=WSAEWOULDBLOCK Error!");
+                ClientLog("WSAGetLastError()!=WSAEWOULDBLOCK Error!");
                 return;
             }
 #else
             if (errno!=EWOULDBLOCK)
             {
-                log("errno!=EWOULDBLOCK Error!");
+                ClientLog("errno!=EWOULDBLOCK Error!");
                 return;
             }
 #endif
@@ -141,7 +149,7 @@ void Client::RecvData()
         //Buffer Overflow
         if ((m_recvSize + recvSize)>=dMAX_SOCK_BUFF)
         {
-            log("Buffer Overflow Error!");
+            ClientLog("Buffer Overflow Error!");
             return;
         }
         
@@ -290,7 +298,7 @@ void Client::OnPacketChatMsg()
     
     GetString(m_recvBuff, chatMsg, m_recvPos);
     
-    ClientLog(chatMsg);
+    ((HelloWorld*)m_Scene)->GetServerMsg(chatMsg);
 }
 
 //发送聊天消息
