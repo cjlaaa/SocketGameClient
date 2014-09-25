@@ -27,7 +27,7 @@ bool Client::init(Node* Scene)
 {
     if(Node::init()==false)
     {
-        ClientLog("Client init Error!");
+        ClientLog("Client init Error!\n");
         return false;
     }
     
@@ -70,10 +70,12 @@ BOOL Client::ConnectToServer(char *host,int port)
     
     //connect
     if (connect(m_sock, (struct sockaddr*)&s_addr_in, sizeof(s_addr_in))!=0) return false;
-    ClientLog("Connetct Server Success!");
+    ClientLog("Connetct Server Success!\n");
    
     //socket Nonblocking
     NonBlock(m_sock);
+    
+    m_nAliveCheckDelayTime = dALIVE_CHECK_DELAY_TIME;
     return true;
 }
 
@@ -337,13 +339,22 @@ void Client::OnSendChangeNick(char* nick)
 //Keep Alive
 void Client::OnSendAliveCheck()
 {
-    char packet[128];
-    int packetPos;
-    
-    packetPos = 2;
-    PutWord(packet, dPACKET_ALIVE_CHECK, packetPos);
-    PutSize(packet, packetPos);
-    send(m_sock, packet, packetPos, 0);
+    if (m_nAliveCheckDelayTime > 0)
+    {
+        m_nAliveCheckDelayTime--;
+    }
+    else
+    {
+        m_nAliveCheckDelayTime = dALIVE_CHECK_DELAY_TIME;
+        
+        char packet[128];
+        int packetPos;
+        
+        packetPos = 2;
+        PutWord(packet, dPACKET_ALIVE_CHECK, packetPos);
+        PutSize(packet, packetPos);
+        send(m_sock, packet, packetPos, 0);
+    }
 }
 
 void Client::ClientLog(char *buf,...)

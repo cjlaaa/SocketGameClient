@@ -1,6 +1,4 @@
 #include "HelloWorldScene.h"
-#include "Client.h"
-USING_NS_CC;
 
 Scene* HelloWorld::createScene()
 {
@@ -39,14 +37,11 @@ bool HelloWorld::init()
                                            "CloseNormal.png",
                                            "CloseSelected.png",
                                            CC_CALLBACK_1(HelloWorld::menuCloseCallback, this));
-    
-	closeItem->setPosition(Vec2(origin.x + visibleSize.width - closeItem->getContentSize().width/2 ,
-                                origin.y + closeItem->getContentSize().height/2));
 
     // create menu, it's an autorelease object
     auto menu = Menu::create(closeItem, NULL);
     menu->setPosition(Vec2::ZERO);
-    this->addChild(menu, 1);
+    this->addChild(menu, enZorderFront+1);
 
     /////////////////////////////
     // 3. add your codes below...
@@ -76,17 +71,33 @@ bool HelloWorld::init()
     CCASSERT(Client!=NULL, "Client Create Error!");
     addChild(Client,enZorderFront,enTagClient);
     
-    if(Client->ConnectToServer("127.0.0.1", 7000)==false) log("Connect Server Failed...");
-    else schedule(schedule_selector(HelloWorld::update), 0.1f);
-    Client->OnSendChangeNick("hENRYcHANG");
+    if(Client->ConnectToServer("192.168.6.108", 7000)==false) log("Connect Server Failed...");
+    else schedule(schedule_selector(HelloWorld::update),0.1f);
+    Client->OnSendChangeNick("test");
     
-    auto pTextField = TextFieldTTF::textFieldWithPlaceHolder("<click here for input>",
-                                                             "Arial",
-                                                             20);
-    pTextField->setDelegate(this);
-    pTextField->attachWithIME();
-    pTextField->setPosition(visibleSize.width/2,visibleSize.height/2);
-    addChild(pTextField,enZorderFront,enTagTextField);
+    auto glview = Director::getInstance()->getOpenGLView();
+    auto editBoxSize = Size(visibleSize.width - 100, 60);
+    auto visibleOrigin = glview->getVisibleOrigin();
+    auto editName = EditBox::create(editBoxSize, Scale9Sprite::create("green_edit.png"));
+    editName->setPosition(Vec2(visibleOrigin.x+visibleSize.width/2, visibleOrigin.y+visibleSize.height*1/10));
+    editName->setFontName("Paint Boy");
+    editName->setFontSize(25);
+    editName->setFontColor(Color3B::RED);
+    editName->setPlaceHolder("Type Here...");
+    editName->setPlaceholderFontColor(Color3B::GRAY);
+    editName->setMaxLength(80);
+    editName->setReturnType(EditBox::KeyboardReturnType::DONE);
+    editName->setDelegate((cocos2d::extension::EditBoxDelegate*)this);
+    addChild(editName,enZorderFront,enTagTextField);
+    
+    closeItem->setPosition(Vec2(editName->getPositionX() + editName->getContentSize().width/2 + closeItem->getContentSize().width/2 ,
+                                editName->getPositionY()));
+    
+    //LayerColor* pTalkList = LayerColor::create(Color4B::RED);
+    Layer* pTalkList = Layer::create();
+    CCASSERT(pTalkList!=NULL, "pTalkList Create Error!");
+    addChild(pTalkList,enZorderMiddle,enTagTalkList);
+    m_nTalkListPos = editName->getContentSize().height;
     
     return true;
 }
@@ -94,25 +105,76 @@ bool HelloWorld::init()
 
 void HelloWorld::menuCloseCallback(Ref* pSender)
 {
-    auto pTextField = dynamic_cast<TextFieldTTF*>(getChildByTag(enTagTextField));
-    CCASSERT(pTextField!=NULL, "TextField Get Error!");
+//    auto pTextField = dynamic_cast<TextFieldTTF*>(getChildByTag(enTagTextField));
+//    CCASSERT(pTextField!=NULL, "TextField Get Error!");
     auto Client = dynamic_cast<class Client*>(getChildByTag(enTagClient));
-    CCASSERT(pTextField!=NULL, "TextField Get Error!");
+    CCASSERT(Client!=NULL, "Client Get Error!");
+    auto pEditBox = dynamic_cast<EditBox*>(getChildByTag(enTagTextField));
+    CCASSERT(pEditBox!=NULL, "TextField Get Error!");
     
-    Client->OnSendChatMsg("test Msg");
+    Client->OnSendChatMsg(pEditBox->getText());
+    
+    pEditBox->setText("");
+    
+    
 }
 
 void HelloWorld::update(float fT)
 {
+//    auto pTextField = dynamic_cast<class TextFieldTTF*>(getChildByTag(enTagTextField));
+//    CCASSERT(pTextField!=NULL, "TextFieldTTF Get Error!");
     auto Client = dynamic_cast<class Client*>(getChildByTag(enTagClient));
     CCASSERT(Client!=NULL, "Client Get Error!");
     
     Client->update(fT);
+    //Client->OnSendAliveCheck();
 }
 
 void HelloWorld::GetServerMsg(std::string MsgFromServer)
 {
-    log("%s",MsgFromServer.c_str());
+    auto Client = dynamic_cast<class Client*>(getChildByTag(enTagClient));
+    CCASSERT(Client!=NULL, "Client Get Error!");
+    
+    Client->ClientLog("%s",MsgFromServer.c_str());
+    
+    createNewLabel(MsgFromServer);
 }
 
+void HelloWorld::editBoxReturn(EditBox* editBox)
+{
+    auto Client = dynamic_cast<class Client*>(getChildByTag(enTagClient));
+    CCASSERT(Client!=NULL, "Client Get Error!");
+    Client->OnSendChatMsg(editBox->getText());
+    
+    editBox->setText("");
+}
+
+void HelloWorld::createNewLabel(std::string strText)
+{
+    Size visibleSize = Director::getInstance()->getVisibleSize();
+    Vec2 origin = Director::getInstance()->getVisibleOrigin();
+    auto glview = Director::getInstance()->getOpenGLView();
+    auto visibleOrigin = glview->getVisibleOrigin();
+    
+    auto pEditBox = dynamic_cast<EditBox*>(getChildByTag(enTagTextField));
+    CCASSERT(pEditBox!=NULL, "TextField Get Error!");
+    auto pTalkList = dynamic_cast<Layer*>(getChildByTag(enTagTalkList));
+    CCASSERT(pTalkList!=NULL,"TalkList Get Error!");
+    
+    Scale9Sprite *pBg = Scale9Sprite::create("green_edit.png");
+    CCASSERT(pBg!=NULL, "pBg create error!");
+    auto pLabel = LabelTTF::create(strText.c_str(), "Arial", 24);
+    CCASSERT(pLabel!=NULL, "pLabel create error!");
+    pLabel->setPosition(pLabel->getPosition() + pLabel->getContentSize()/1.9);
+    pLabel->setDimensions(pEditBox->getContentSize());
+    pBg->addChild(pLabel);
+    pBg->setPosition(visibleSize.width/2,m_nTalkListPos);
+    pBg->setContentSize(pEditBox->getContentSize());
+    pTalkList->addChild(pBg);
+    
+    
+    MoveBy* pMoveBy = MoveBy::create(0.2, Vec2(0,pEditBox->getContentSize().height * 1.5));
+    pTalkList->runAction(pMoveBy);
+    m_nTalkListPos -= pEditBox->getContentSize().height * 1.5;
+}
 

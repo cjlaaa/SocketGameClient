@@ -3,11 +3,14 @@
 
 #include "cocos2d.h"
 #include "Client.h"
+#include "extensions/cocos-ext.h"
+USING_NS_CC_EXT;
 
 enum
 {
     enTagTextField = 0,
     enTagClient = 1,
+    enTagTalkList = 2,
 };
 
 enum
@@ -17,7 +20,7 @@ enum
     enZorderFront = 200,
 };
 
-class HelloWorld : public cocos2d::Layer,public cocos2d::TextFieldDelegate,public ClientDelegate
+class HelloWorld : public cocos2d::Layer,public cocos2d::extension::EditBoxDelegate,public ClientDelegate
 {
 public:
     // there's no 'id' in cpp, so we recommend returning the class instance pointer
@@ -35,6 +38,12 @@ public:
     void update(float);
     
     void GetServerMsg(std::string);
+    
+    void editBoxReturn(EditBox* editBox);
+    
+    void createNewLabel(std::string);
+    
+    int m_nTalkListPos;
 };
 
 #endif // __HELLOWORLD_SCENE_H__

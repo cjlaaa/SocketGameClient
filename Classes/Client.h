@@ -13,6 +13,8 @@
 #include "message.h"
 #include "cocos2d.h"
 #define dMAX_SOCK_BUFF 1024
+//连接检测消息间隔,单位为"次循环"(循环函数每运行n次发送一次)
+#define dALIVE_CHECK_DELAY_TIME 10
 
 class ClientDelegate
 {
@@ -42,6 +44,8 @@ public:
     
     //场景成员变量
     Node* m_Scene;
+    //AliveCheck
+    int m_nAliveCheckDelayTime;
     
     //数据包消息函数
     void OnPacketChatMsg();
