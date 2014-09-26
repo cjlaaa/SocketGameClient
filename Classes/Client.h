@@ -58,13 +58,15 @@ public:
     //数据的接收函数
     void RecvData();
     //连接处理函数
-    BOOL ConnectToServer(char *host,int port);
+    BOOL ConnectToServer(char *host,int port,bool isDomian = false);
     //关闭函数
     void CloseChat();
     //周期函数
     void update(float fT);
     //输出函数
     void ClientLog(char *buf,...);
+    //将域名转换为ip地址
+    unsigned long getaddrbydomian(char *addr);
     
 protected:
     //BYTE型数据包函数

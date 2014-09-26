@@ -47,8 +47,20 @@ void Client::update(float fT)
     ReadRecvBuff();
 }
 
+unsigned long Client::getaddrbydomian(char *addr)
+{
+    struct hostent *ph;
+    struct in_addr in;
+    //传递的域名地址通过gethostbyname函数转换成struct hostent结构体的指针。
+    ph = gethostbyname(addr);
+    
+    //h_addr实际上是一个数组，包含四个数字
+    memcpy((char**)&(in), ph->h_addr, ph->h_length);
+    return (in.s_addr);
+}
+
 //连接处理函数
-BOOL Client::ConnectToServer(char *host,int port)
+BOOL Client::ConnectToServer(char *host,int port,bool isDomian)
 {
 #ifdef WIN32
     WSADATA wsa;
@@ -66,7 +78,14 @@ BOOL Client::ConnectToServer(char *host,int port)
     
     s_addr_in.sin_family = AF_INET;
     s_addr_in.sin_port = htons(port);
-    s_addr_in.sin_addr.s_addr = inet_addr(host);
+    if (isDomian)
+    {
+        s_addr_in.sin_addr.s_addr = getaddrbydomian(host);
+    }
+    else
+    {
+        s_addr_in.sin_addr.s_addr = inet_addr(host);
+    }
     
     //connect
     if (connect(m_sock, (struct sockaddr*)&s_addr_in, sizeof(s_addr_in))!=0) return false;

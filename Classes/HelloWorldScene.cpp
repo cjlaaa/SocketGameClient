@@ -71,7 +71,7 @@ bool HelloWorld::init()
     CCASSERT(Client!=NULL, "Client Create Error!");
     addChild(Client,enZorderFront,enTagClient);
     
-    if(Client->ConnectToServer("192.168.6.108", 7000)==false) log("Connect Server Failed...");
+    if(Client->ConnectToServer("cjlaaa.chinacloudapp.cn",7000,true)==false) log("Connect Server Failed...");
     else schedule(schedule_selector(HelloWorld::update),0.1f);
     Client->OnSendChangeNick("test");
     
@@ -82,7 +82,7 @@ bool HelloWorld::init()
     editName->setPosition(Vec2(visibleOrigin.x+visibleSize.width/2, visibleOrigin.y+visibleSize.height*1/10));
     editName->setFontName("Paint Boy");
     editName->setFontSize(25);
-    editName->setFontColor(Color3B::RED);
+    editName->setFontColor(Color3B::WHITE);
     editName->setPlaceHolder("Type Here...");
     editName->setPlaceholderFontColor(Color3B::GRAY);
     editName->setMaxLength(80);
@@ -127,7 +127,7 @@ void HelloWorld::update(float fT)
     CCASSERT(Client!=NULL, "Client Get Error!");
     
     Client->update(fT);
-    //Client->OnSendAliveCheck();
+    Client->OnSendAliveCheck();
 }
 
 void HelloWorld::GetServerMsg(std::string MsgFromServer)
@@ -165,7 +165,7 @@ void HelloWorld::createNewLabel(std::string strText)
     CCASSERT(pBg!=NULL, "pBg create error!");
     auto pLabel = LabelTTF::create(strText.c_str(), "Arial", 24);
     CCASSERT(pLabel!=NULL, "pLabel create error!");
-    pLabel->setPosition(pLabel->getPosition() + pLabel->getContentSize()/1.9);
+    pLabel->setPosition(Vec2(pLabel->getPositionX() + pLabel->getContentSize().width*0.6,pLabel->getPositionY() + pLabel->getContentSize().height*0.3));
     pLabel->setDimensions(pEditBox->getContentSize());
     pBg->addChild(pLabel);
     pBg->setPosition(visibleSize.width/2,m_nTalkListPos);
